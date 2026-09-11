@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import { NewTenant, Tenant, tenants } from "../entities/tenant.entity";
 
 export interface TenantRepository {
@@ -9,15 +9,17 @@ export interface TenantRepository {
 }
 
 export class DrizzleTenantRepository implements TenantRepository {
-  findAll() { return db.select().from(tenants); }
+  constructor(private readonly database: Database = db) {}
+
+  findAll() { return this.database.select().from(tenants); }
 
   async findById(id: string) {
-    const [tenant] = await db.select().from(tenants).where(eq(tenants.id, id));
+    const [tenant] = await this.database.select().from(tenants).where(eq(tenants.id, id));
     return tenant;
   }
 
   async create(input: NewTenant) {
-    const [tenant] = await db.insert(tenants).values(input).returning();
+    const [tenant] = await this.database.insert(tenants).values(input).returning();
     return tenant;
   }
 }

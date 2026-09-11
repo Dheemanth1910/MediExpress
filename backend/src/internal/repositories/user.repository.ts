@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import { NewUser, User, users } from "../entities/user.entity";
 
 export interface UserRepository {
@@ -10,23 +10,25 @@ export interface UserRepository {
 }
 
 export class DrizzleUserRepository implements UserRepository {
+  constructor(private readonly database: Database = db) {}
+
   async findById(id: string) {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await this.database.select().from(users).where(eq(users.id, id));
     return user;
   }
 
   async findByEmail(email: string) {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const [user] = await this.database.select().from(users).where(eq(users.email, email));
     return user;
   }
 
   async create(user: NewUser) {
-    const [created] = await db.insert(users).values(user).returning();
+    const [created] = await this.database.insert(users).values(user).returning();
     return created;
   }
 
   async update(id: string, user: Partial<NewUser>) {
-    const [updated] = await db.update(users).set(user).where(eq(users.id, id)).returning();
+    const [updated] = await this.database.update(users).set(user).where(eq(users.id, id)).returning();
     return updated;
   }
 }

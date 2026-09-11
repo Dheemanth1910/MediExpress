@@ -5,8 +5,13 @@ import { UserService } from "./services/user/user.service";
 import { AuthService } from "./services/user/auth.service";
 import { DrizzleUserRepository } from "./repositories/user.repository";
 import { DrizzleSessionRepository } from "./repositories/session.repository";
+import { DrizzleInventoryRepository } from "./repositories/inventory.repository";
+import { DrizzleRbacRepository } from "./repositories/rbac.repository";
+import { DrizzleTenantRepository } from "./repositories/tenant.repository";
+import { db, type Database } from "../db/client";
 
 export interface AppDependencies {
+  database: Database;
   inventoryService: InventoryService;
   rbacService: RbacService;
   tenantService: TenantService;
@@ -15,14 +20,16 @@ export interface AppDependencies {
 }
 
 export const createDependencies = (overrides: Partial<AppDependencies> = {}): AppDependencies => {
-  const userRepository = new DrizzleUserRepository();
-  const sessionRepository = new DrizzleSessionRepository();
-  const userService = overrides.userService ?? new UserService(userRepository);
+  const database = overrides.database ?? db;
+  const userRepository = new DrizzleUserRepository(database);
+  const sessionRepository = new DrizzleSessionRepository(database);
+
   return {
-  inventoryService: overrides.inventoryService ?? new InventoryService(),
-  rbacService: overrides.rbacService ?? new RbacService(),
-  tenantService: overrides.tenantService ?? new TenantService(),
-    userService,
+    database,
+    inventoryService: overrides.inventoryService ?? new InventoryService(new DrizzleInventoryRepository(database)),
+    rbacService: overrides.rbacService ?? new RbacService(new DrizzleRbacRepository(database)),
+    tenantService: overrides.tenantService ?? new TenantService(new DrizzleTenantRepository(database)),
+    userService: overrides.userService ?? new UserService(userRepository),
     authService: overrides.authService ?? new AuthService(userRepository, sessionRepository),
   };
 };
