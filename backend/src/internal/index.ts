@@ -5,6 +5,7 @@ import { createTenantRoutes } from "./routes/tenant.routes";
 import { createInventoryRoutes } from "./routes/inventory.routes";
 import { createUserRoutes } from "./routes/user.routes";
 import { createRbacRoutes } from "./routes/rbac.routes";
+import { createMedicineDiagnosisRoutes } from "./routes/medicine-diagnosis.routes"
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ export const createApp = (dependencies: AppDependencies = createDependencies()) 
   app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService));
   app.use("/api/user", createUserRoutes(dependencies.userService, dependencies.authService));
   app.use("/api/rbac", createRbacRoutes(dependencies.rbacService));
+  app.use("/api/medicine" , createMedicineDiagnosisRoutes(dependencies.medicineDiagnosesService))
 
   return app;
 };
