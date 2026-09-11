@@ -1,5 +1,5 @@
 import { eq, inArray, or, sql } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import { NewRole, PermissionRecord, Role, permissions, roles } from "../entities/rbac.entity";
 
 export interface RbacRepository {
@@ -13,18 +13,20 @@ export interface RbacRepository {
 }
 
 export class DrizzleRbacRepository implements RbacRepository {
+  constructor(private readonly database: Database = db) {}
+
   async createRole(role: NewRole) {
-    const [created] = await db.insert(roles).values(role).returning();
+    const [created] = await this.database.insert(roles).values(role).returning();
     return created;
   }
 
   async updateRole(id: number, role: Partial<NewRole>) {
-    const [updated] = await db.update(roles).set(role).where(eq(roles.id, id)).returning();
+    const [updated] = await this.database.update(roles).set(role).where(eq(roles.id, id)).returning();
     return updated;
   }
 
   async findRoleByName(name: string, subTenantId: string | null) {
-    const [role] = await db.select().from(roles).where(
+    const [role] = await this.database.select().from(roles).where(
       sql`${roles.name} = ${name} AND ${roles.subTenantId} IS NOT DISTINCT FROM ${subTenantId}`,
     );
     return role;
@@ -39,22 +41,22 @@ export class DrizzleRbacRepository implements RbacRepository {
         : or(eq(roles.subTenantId, subTenantId), sql`${roles.subTenantId} IS NULL`);
     const filters = [inArray(roles.id, ids)];
     if (tenantFilter) filters.push(tenantFilter);
-    return db.select().from(roles).where(filters.length === 1 ? filters[0] : sql`${filters[0]} AND ${filters[1]}`);
+    return this.database.select().from(roles).where(filters.length === 1 ? filters[0] : sql`${filters[0]} AND ${filters[1]}`);
   }
 
   async listRoles(subTenantId?: string) {
-    if (!subTenantId) return db.select().from(roles);
-    return db.select().from(roles).where(
+    if (!subTenantId) return this.database.select().from(roles);
+    return this.database.select().from(roles).where(
       or(eq(roles.subTenantId, subTenantId), sql`${roles.subTenantId} IS NULL`),
     );
   }
 
   async listPermissions() {
-    return db.select().from(permissions);
+    return this.database.select().from(permissions);
   }
 
   async seedPermissions(values: PermissionRecord[]) {
     if (values.length === 0) return;
-    await db.insert(permissions).values(values).onConflictDoNothing();
+    await this.database.insert(permissions).values(values).onConflictDoNothing();
   }
 }

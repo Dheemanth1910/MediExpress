@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import { InventoryItem, NewInventoryItem, inventoryItems } from "../entities/inventory.entity";
 
 export interface InventoryRepository {
@@ -9,15 +9,17 @@ export interface InventoryRepository {
 }
 
 export class DrizzleInventoryRepository implements InventoryRepository {
-  findAll() { return db.select().from(inventoryItems); }
+  constructor(private readonly database: Database = db) {}
+
+  findAll() { return this.database.select().from(inventoryItems); }
 
   async findById(id: string) {
-    const [item] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id));
+    const [item] = await this.database.select().from(inventoryItems).where(eq(inventoryItems.id, id));
     return item;
   }
 
   async create(input: NewInventoryItem) {
-    const [item] = await db.insert(inventoryItems).values(input).returning();
+    const [item] = await this.database.insert(inventoryItems).values(input).returning();
     return item;
   }
 }
