@@ -22,7 +22,7 @@ export const createApp = (dependencies: AppDependencies = createDependencies()) 
   app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService));
   app.use("/api/user", createUserRoutes(dependencies.userService, dependencies.authService));
   app.use("/api/rbac", createRbacRoutes(dependencies.rbacService));
-  app.use("/api/medicine" , createMedicineDiagnosisRoutes(dependencies.medicineDiagnosesService))
+  app.use("/api" , createMedicineDiagnosisRoutes(dependencies.medicineDiagnosesService))
 
   return app;
 };

@@ -15,7 +15,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-const BASE_URL = "http://localhost:4000/api/medicine";
+const BASE_URL = "http://localhost:4000/api";
 const BATCH_SIZE = 10;
 
 type CreationResult<T> =
