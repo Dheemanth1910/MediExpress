@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../internal";
 import { createDependencies } from "../internal/container";
 import { Permission } from "../internal/services/rbac/permission";
+import { medicines } from "../internal/entities/medicine.entity";
 import { createIntegrationDatabase, IntegrationDatabase } from "./test-database";
 
 const runIntegrationTests = process.env.RUN_INTEGRATION_TESTS === "1";
@@ -17,6 +18,7 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
   let tenantId: string;
   let userId: string;
   let token: string;
+  let userEmail: string;
 
   beforeAll(async () => {
     database = await createIntegrationDatabase();
@@ -45,6 +47,7 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
 
   it("runs user registration, login, protected access, update, and logout", async () => {
     const email = `integration-${Date.now()}@example.com`;
+    userEmail = email;
     expect((await request(app).post("/api/user/create").send({ name: "Integration", email, password: "password123", subTenant: tenantId })).status).toBe(201);
     expect((await request(app).post("/api/user/create").send({ name: "Duplicate", email, password: "password123" })).status).toBe(409);
 
@@ -65,13 +68,67 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
 
   });
 
+  it("runs the protected inventory lifecycle", async () => {
+    const inventoryToken = (await request(app).post("/api/user/login").send({
+      email: userEmail,
+      password: "password123",
+    })).body.token as string;
+
+    const [medicine] = await database.database.insert(medicines).values({
+      name: `Integration medicine ${Date.now()}`,
+      category: "A",
+    }).returning();
+
+    expect((await request(app).post("/api/inventory/add").send({
+      medicineId: medicine.id,
+      quantity: 4,
+      expiryDate: "2030-01-01",
+    })).status).toBe(401); // auth failed
+
+    const invalid = await request(app).post("/api/inventory/add")
+      .set("Authorization", `Bearer ${inventoryToken}`)
+      .send({ medicineId: medicine.id, quantity: 4 });
+    expect(invalid.status).toBe(400); // invalid payload
+
+    const item = await request(app).post("/api/inventory/add")
+      .set("Authorization", `Bearer ${inventoryToken}`)
+      .send({ medicineId: medicine.id, quantity: 4, expiryDate: "2030-01-01" });
+    expect(item.status).toBe(201);
+
+    const itemResponse = await request(app).get(`/api/inventory/${item.body.id}`).set("Authorization", `Bearer ${inventoryToken}`);
+    expect(itemResponse.status).toBe(200);
+    const queryResponse = await request(app).get("/api/inventory/get?page=1&pageSize=10").set("Authorization", `Bearer ${inventoryToken}`)
+    expect(queryResponse.body.total).toBe(1);
+
+    const added = await request(app).put("/api/inventory/update")
+      .set("Authorization", `Bearer ${inventoryToken}`)
+      .send({ id: item.body.id, operation: "add", quantity: 2, reason: "Restock" });
+    expect(added.status).toBe(200);
+
+    const removed = await request(app).put("/api/inventory/update")
+      .set("Authorization", `Bearer ${inventoryToken}`)
+      .send({ id: item.body.id, operation: "del", quantity: 1, diagnosisCodes: ["J01"] });
+    expect(removed.status).toBe(200);
+
+    const insufficient = await request(app).put("/api/inventory/update")
+      .set("Authorization", `Bearer ${inventoryToken}`)
+      .send({ id: item.body.id, operation: "del", quantity: 999, diagnosisCodes: ["J01"] });
+    expect(insufficient.status).toBe(409);
+
+    const audit = await request(app).get("/api/inventory/audit?page=1&pageSize=10")
+      .set("Authorization", `Bearer ${inventoryToken}`);
+    expect(audit.status).toBe(200);
+    expect(audit.body.total).toBe(2);
+    expect(audit.body.data).toHaveLength(2);
+  });
+
 
   it("custom api calls", async () => {
     const payload = { email: "rahul@gmail.com", password: "passwd" };
 
     await request(app).post("/api/user/login").send(payload)
       .then(response => {
-        console.log(response.status)
+        // console.log(response.status)
       });
   });
 })

@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { MedicineDiagnosisController } from "../controllers/medicine-diagnosis.contoller";
+import { MedicineDiagnosisController } from "../controllers/medicine-diagnosis.controller";
 
 import { MedicineDiagnosisService } from "../services/medicine-diagnosis/medicine-diagnosis.service";
 
@@ -14,8 +14,8 @@ export const createMedicineDiagnosisRoutes = (
 
   const controller = new MedicineDiagnosisController(medicineDiagnosisService);
 
+  // TODO: create meicine searchable dropdown api
   router.post("/medicines/create", controller.createMedicines.bind(controller));
-
   router.post("/diagnoses/create", controller.createDiagnoses.bind(controller));
 
   router.post(

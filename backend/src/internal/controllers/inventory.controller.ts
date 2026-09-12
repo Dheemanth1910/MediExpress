@@ -1,24 +1,45 @@
 import { Request, Response } from "express";
-import { createInventoryRequestSchema } from "../dtos/inventory.dto";
+import { createInventoryRequestSchema, inventoryAuditQuerySchema, inventoryQuerySchema, updateInventoryRequestSchema } from "../dtos/inventory.dto";
 import { InventoryService, InventoryServiceError } from "../services/inventory/inventory.service";
 
 export class InventoryController {
   constructor(private readonly service: InventoryService) {}
 
-  async list(_req: Request, res: Response) {
-    try { return res.json(await this.service.list()); }
+  async list(req: Request, res: Response) {
+    const parsed = inventoryQuerySchema.safeParse(req.query);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid query", details: parsed.error.issues });
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.json(await this.service.list(parsed.data, req.auth.subTenantId)); }
     catch (error) { return this.handleError(res, error); }
   }
 
   async get(req: Request, res: Response) {
-    try { return res.json(await this.service.get(req.params.id as string)); }
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.json(await this.service.get(req.params.id as string, req.auth.subTenantId)); }
+    catch (error) { return this.handleError(res, error); }
+  }
+
+  async audit(req: Request, res: Response) {
+    const parsed = inventoryAuditQuerySchema.safeParse(req.query);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid query", details: parsed.error.issues });
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.json(await this.service.audit(parsed.data, req.auth.subTenantId)); }
     catch (error) { return this.handleError(res, error); }
   }
 
   async create(req: Request, res: Response) {
     const parsed = createInventoryRequestSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
-    try { return res.status(201).json(await this.service.create(parsed.data)); }
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.status(201).json(await this.service.create(parsed.data, req.auth.subTenantId)); }
+    catch (error) { return this.handleError(res, error); }
+  }
+
+  async update(req: Request, res: Response) {
+    const parsed = updateInventoryRequestSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.json(await this.service.update(parsed.data, req.auth.subTenantId)); }
     catch (error) { return this.handleError(res, error); }
   }
 

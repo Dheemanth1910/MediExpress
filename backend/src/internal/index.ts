@@ -7,7 +7,7 @@ import { createUserRoutes } from "./routes/user.routes";
 import { createRbacRoutes } from "./routes/rbac.routes";
 import { createMedicineDiagnosisRoutes } from "./routes/medicine-diagnosis.routes"
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 export const createApp = (dependencies: AppDependencies = createDependencies()) => {
   const app = express();
@@ -19,10 +19,10 @@ export const createApp = (dependencies: AppDependencies = createDependencies()) 
   });
 
   app.use("/api/tenants", createTenantRoutes(dependencies.tenantService));
-  app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService));
   app.use("/api/user", createUserRoutes(dependencies.userService, dependencies.authService));
   app.use("/api/rbac", createRbacRoutes(dependencies.rbacService));
   app.use("/api/medicine" , createMedicineDiagnosisRoutes(dependencies.medicineDiagnosesService))
+  app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService, dependencies.authService));
 
   return app;
 };

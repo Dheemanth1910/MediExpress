@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789042745164,
+      "tag": "0000_old_brood",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789052632581,
+      "tag": "0001_silly_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789053349549,
+      "tag": "0002_stale_captain_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789207197143,
+      "tag": "0003_free_living_mummy",
+      "breakpoints": true
+    }
+  ]
+}
