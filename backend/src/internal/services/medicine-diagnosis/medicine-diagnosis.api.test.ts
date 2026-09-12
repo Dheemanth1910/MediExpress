@@ -29,7 +29,6 @@ class InMemoryMedicineRepository implements MedicineRepository {
       id: this.medicines.size === 0 ? medicineId : `medicine-${this.medicines.size + 1}`,
       name: input.name,
       category: input.category,
-      expiryDate: input.expiryDate ?? null,
     };
     this.medicines.set(medicine.id, medicine);
     return medicine;
@@ -105,8 +104,8 @@ describe("medicine-diagnosis service", () => {
     const { service } = makeService();
 
     const results = await service.createMedicines([
-      { name: "Paracetamol", category: "N" , expiryDate : '' },
-      { name: "Amoxicillin", category: "J" , expiryDate : '' },
+      { name: "Paracetamol", category: "N"  },
+      { name: "Amoxicillin", category: "J"},
     ]);
 
     expect(results).toHaveLength(2);
@@ -136,7 +135,7 @@ describe("medicine-diagnosis service", () => {
     const { service, medicineRepository, diagnosisRepository } = makeService();
 
     const [medicineResult] = await service.createMedicines([
-      { name: "Paracetamol", category: "N" , expiryDate : '' },
+      { name: "Paracetamol", category: "N" },
     ]);
     const [diagnosisResult] = await service.createDiagnoses([
       { icdCode: "J11", description: "Influenza", chapter: "X" },

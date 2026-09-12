@@ -22,7 +22,6 @@ export const medicines = pgTable("medicines", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   category: medicineCategoryEnum("category").notNull(),
-  expiryDate: date("expiry_date").notNull(),
 });
 
 export type Medicine = typeof medicines.$inferSelect;

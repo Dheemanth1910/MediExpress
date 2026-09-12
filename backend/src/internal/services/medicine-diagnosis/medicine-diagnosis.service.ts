@@ -42,7 +42,6 @@ function toMedicineResponse(medicine: Medicine): MedicineResponse {
     id: medicine.id,
     name: medicine.name,
     category: medicine.category,
-    expiryDate: medicine.expiryDate,
   };
 }
 
@@ -83,8 +82,7 @@ export class MedicineDiagnosisService {
       input.map(async (medicineInput) => {
         const newMedicine: NewMedicine = {
           name: medicineInput.name,
-          category: medicineInput.category,
-          expiryDate: medicineInput.expiryDate,
+          category: medicineInput.category
         };
 
         try {

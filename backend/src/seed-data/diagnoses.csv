@@ -1,0 +1,28 @@
+icdCode,description,chapter
+A09,Diarrhoea and gastroenteritis of presumed infectious origin,I
+B34,Viral infection of unspecified site,I
+D50,Iron deficiency anaemia,III
+E03,Hypothyroidism,IV
+E11,Type 2 diabetes mellitus,IV
+F32,Depressive episode,V
+F41,Anxiety disorder,V
+G43,Migraine,VI
+G40,Epilepsy,VI
+H10,Conjunctivitis,VII
+H66,Otitis media,VIII
+I10,Essential hypertension,IX
+I25,Chronic ischaemic heart disease,IX
+J00,Acute nasopharyngitis (common cold),X
+J02,Acute pharyngitis,X
+J11,Influenza virus not identified,X
+J45,Asthma,X
+K21,Gastro-oesophageal reflux disease,XI
+K29,Gastritis,XI
+K59,Constipation,XI
+L23,Allergic contact dermatitis,XII
+L30,Dermatitis unspecified,XII
+M25,Joint pain,XIII
+M54,Back pain,XIII
+N39,Urinary tract infection,XIV
+R50,Fever of unknown origin,XVIII
+R51,Headache,XVIII

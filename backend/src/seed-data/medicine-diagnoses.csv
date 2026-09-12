@@ -1,0 +1,44 @@
+medicineName,icdCode
+Paracetamol,R50
+Paracetamol,R51
+Paracetamol,J11
+Paracetamol,M54
+Ibuprofen,M54
+Ibuprofen,M25
+Ibuprofen,R50
+Diclofenac,M25
+Diclofenac,M54
+Amoxicillin,J02
+Amoxicillin,H66
+Amoxicillin,N39
+Azithromycin,J00
+Azithromycin,J02
+Ciprofloxacin,N39
+Ciprofloxacin,A09
+Doxycycline,J02
+Cetirizine,J00
+Cetirizine,L23
+Salbutamol,J45
+Dextromethorphan,J00
+Dextromethorphan,J11
+Guaifenesin,J00
+Omeprazole,K21
+Omeprazole,K29
+Domperidone,K29
+Loperamide,A09
+Metformin,E11
+Levothyroxine,E03
+Amlodipine,I10
+Atorvastatin,I25
+Losartan,I10
+Aspirin,I25
+Ferrous Sulfate,D50
+Diazepam,F41
+Amitriptyline,F32
+Amitriptyline,G43
+Hydrocortisone Cream,L30
+Clotrimazole Cream,L23
+Oxybutynin,N39
+Multivitamin,D50
+Oral Rehydration Salts,A09
+Albendazole,A09

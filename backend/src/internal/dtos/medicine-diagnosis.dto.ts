@@ -6,7 +6,6 @@ const medicineSchema = z
   .object({
     name: z.string().trim().min(1).max(255),
     category: z.enum(medicineCategoryEnum.enumValues),
-    expiryDate: z.string().date(),
   })
   .strict();
 
@@ -35,7 +34,6 @@ export const medicineResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   category: z.enum(medicineCategoryEnum.enumValues),
-  expiryDate: z.string().date().nullable(),
 });
 
 export const diagnosisResponseSchema = z.object({
