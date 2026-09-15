@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import { medicines, Medicine, NewMedicine } from "../entities/medicine.entity";
 
 export interface MedicineRepository {
@@ -9,20 +9,24 @@ export interface MedicineRepository {
 }
 
 export class DrizzleMedicineRepository implements MedicineRepository {
+  constructor(private readonly database: Database = db) {}
   findAll() {
-    return db.select().from(medicines);
+    return this.database.select().from(medicines);
   }
 
   async findById(id: string) {
-    const [medicine] = await db
+    const [medicine] = await this.database
       .select()
       .from(medicines)
       .where(eq(medicines.id, id));
     return medicine;
   }
-  
+
   async create(input: NewMedicine) {
-    const [medicine] = await db.insert(medicines).values(input).returning();
+    const [medicine] = await this.database
+      .insert(medicines)
+      .values(input)
+      .returning();
     return medicine;
   }
 }
