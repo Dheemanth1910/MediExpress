@@ -19,12 +19,12 @@
     "seed": "tsx src/server/scripts/medicine-diagnosis.seed.ts"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^9.0.3",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "pg": "^8.23.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "uuid": "^14.0.2",
     "zod": "^4.6.1"
   },
   "devDependencies": {

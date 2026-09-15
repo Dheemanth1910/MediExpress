@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../../db/client";
+import { db, type Database } from "../../db/client";
 import {
   Diagnosis,
   NewDiagnosis,
@@ -13,12 +13,13 @@ export interface DiagnosisRepository {
 }
 
 export class DrizzleDiagnosisRepository implements DiagnosisRepository {
+  constructor(private readonly database: Database = db) {}
   findAll() {
-    return db.select().from(diagnoses);
+    return this.database.select().from(diagnoses);
   }
 
   async findById(id: string) {
-    const [diagnosis] = await db
+    const [diagnosis] = await this.database
       .select()
       .from(diagnoses)
       .where(eq(diagnoses.id, id));
@@ -26,7 +27,7 @@ export class DrizzleDiagnosisRepository implements DiagnosisRepository {
   }
 
   async create(input: NewDiagnosis) {
-    const [diagnosis] = await db.insert(diagnoses).values(input).returning();
+    const [diagnosis] = await this.database.insert(diagnoses).values(input).returning();
     return diagnosis;
   }
 }

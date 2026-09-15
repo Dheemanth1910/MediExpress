@@ -1,0 +1,93 @@
+/**
+ * Intended to run on a schedule via crontab, e.g.:
+ * /15 * * * * cd /path/to/project && npx tsx bigquery-sync/sync-cron.ts >> /var/log/bq-sync.log 2>&1
+ *
+ * Reads the last synced inventory_movements.id from sync_state,
+ * fetches every "DEL" movement created since then (using > on the
+ * UUIDv7 id, which is safe because v7 UUIDs are time-ordered),
+ * pushes them into BigQuery, and advances the watermark to the
+ * highest id it just processed.
+ **/
+
+import { gt, eq, and } from "drizzle-orm";
+import { db } from "../db/client";
+import { inventoryMovements } from "../internal/entities/inventory-movement.entity";
+import { inventoryItems } from "../internal/entities/inventory.entity";
+import { BigQueryOutboundMovementRepository } from "../internal/repositories/outbound-movement.repository";
+import { DrizzleSyncStateRepository } from "../internal/repositories/sync-state.repository";
+import { NewOutboundMovement } from "../internal/entities/outbound-movement.entity";
+
+const JOB_NAME = "inventory_movements_to_bigquery";
+
+async function main() {
+  const syncStateRepository = new DrizzleSyncStateRepository();
+  const lastSyncedId = await syncStateRepository.getLastSyncedId(JOB_NAME);
+  console.log(
+    lastSyncedId
+      ? `Fetching outbound movements after id ${lastSyncedId}...`
+      : "No watermark found - fetching all outbound movements...",
+  );
+
+  const rows = await db
+    .select({
+      id: inventoryMovements.id,
+      inventoryItemId: inventoryMovements.inventoryItemId,
+      medicineName: inventoryItems.name,
+      medicineCategory: inventoryItems.category,
+      subTenantId: inventoryMovements.subTenantId,
+      quantity: inventoryMovements.quantity,
+      reason: inventoryMovements.reason,
+      diagnosisCodes: inventoryMovements.diagnosisCodes,
+      createdAt: inventoryMovements.createdAt,
+    })
+    .from(inventoryMovements)
+    .innerJoin(
+      inventoryItems,
+      eq(inventoryMovements.inventoryItemId, inventoryItems.id),
+    )
+    .where(
+      and(
+        eq(inventoryMovements.operation, "DEL"),
+        lastSyncedId ? gt(inventoryMovements.id, lastSyncedId) : undefined,
+      ),
+    )
+    .orderBy(inventoryMovements.id);
+
+  if (rows.length === 0) {
+    console.log("No new outbound movements to sync.");
+    return;
+  }
+
+  console.log(`Found ${rows.length} new outbound movement(s). Syncing...`);
+
+  const syncedAt = new Date().toISOString();
+  const bigQueryRows: NewOutboundMovement[] = rows.map((row) => ({
+    movement_id: row.id,
+    inventory_item_id: row.inventoryItemId,
+    item_name: row.itemName,
+    item_category: row.itemCategory,
+    sub_tenant_id: row.subTenantId,
+    quantity: row.quantity,
+    reason: row.reason,
+    diagnosis_codes: row.diagnosisCodes ?? [],
+    created_at: row.createdAt.toISOString(),
+    synced_at: syncedAt,
+  }));
+
+  const outboundMovementRepository = new BigQueryOutboundMovementRepository();
+  await outboundMovementRepository.createMany(bigQueryRows);
+
+  // ids are UUIDv7, so the last row in ascending order is also the
+  // highest id - no separate max() computation needed.
+  const highestId = rows[rows.length - 1].id;
+  await syncStateRepository.setLastSyncedId(JOB_NAME, highestId);
+
+  console.log(`Synced ${rows.length} row(s). Watermark advanced to ${highestId}.`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("BigQuery sync cron failed:", error);
+    process.exit(1);
+  });
