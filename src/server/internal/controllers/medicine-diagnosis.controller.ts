@@ -5,7 +5,7 @@ import {
   createMedicinesRequestSchema,
   createDiagnosesRequestSchema,
   createMedicineDiagnosesRequestSchema,
-} from "../dtos/medicine-diagnosis.dto";
+} from "../../../shared/dtos/medicine-diagnosis.dto";
 
 import {
   MedicineDiagnosisService,

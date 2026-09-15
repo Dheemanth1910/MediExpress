@@ -5,16 +5,17 @@ and `src/shared/dtos` public contract barrel.
 
 ## Current boundary
 
-- Server DTO modules remain the source of truth for Zod runtime validation.
-- `src/shared/dtos/index.ts` exports only transport TypeScript types to the client.
+- `src/shared/dtos/` is the source of truth for Zod runtime validation and
+  inferred transport types.
+- `src/shared/dtos/index.ts` is the public barrel consumed by the client.
 - The client API module consumes those types, so request and response changes are
   compile-time visible on both sides.
 
 ## Next promotion step
 
-When a DTO needs browser-side runtime validation, move its schema and primitive
-enums into `src/shared/dtos/<domain>.ts`. The server should import that schema
-for request validation, while the client can use the same schema for forms and
+When a DTO needs browser-side runtime validation, add its schema and primitive
+enums to `src/shared/dtos/<domain>.ts`. The server imports that schema for
+request validation, while the client can use the same schema for forms and
 response parsing. Keep database entities, repositories, and service-only DTOs
 outside `src/shared`.
 

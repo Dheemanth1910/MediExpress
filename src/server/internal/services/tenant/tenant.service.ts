@@ -1,4 +1,4 @@
-import { CreateTenantRequest } from "../../dtos/tenant.dto";
+import { CreateTenantRequest } from "../../../shared/dtos/tenant.dto";
 import { NewTenant, Tenant } from "../../entities/tenant.entity";
 import { DrizzleTenantRepository, TenantRepository } from "../../repositories/tenant.repository";
 

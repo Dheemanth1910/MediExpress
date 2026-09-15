@@ -1,7 +1,7 @@
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { NewUser, User } from "../../entities/user.entity";
-import { CreateUserRequest, UpdateUserRequest, UserResponse } from "../../dtos/user.dto";
+import { CreateUserRequest, UpdateUserRequest, UserResponse } from "../../../shared/dtos/user.dto";
 import { DrizzleUserRepository, UserRepository } from "../../repositories/user.repository";
 
 const scryptAsync = promisify(scrypt);

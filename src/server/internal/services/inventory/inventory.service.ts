@@ -1,6 +1,6 @@
 import { InventoryItem, NewInventoryItem } from "../../entities/inventory.entity";
 import { NewInventoryMovement } from "../../entities/inventory-movement.entity";
-import { CreateInventoryRequest, InventoryAuditEntryResponse, InventoryAuditQuery, InventoryItemResponse, InventoryQuery, UpdateInventoryRequest } from "../../dtos/inventory.dto";
+import { CreateInventoryRequest, InventoryAuditEntryResponse, InventoryAuditQuery, InventoryItemResponse, InventoryQuery, UpdateInventoryRequest } from "../../../shared/dtos/inventory.dto";
 import { DrizzleInventoryRepository, InventoryRepository } from "../../repositories/inventory.repository";
 
 const toResponse = (item: InventoryItem): InventoryItemResponse => ({

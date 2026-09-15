@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createInventoryRequestSchema, inventoryAuditQuerySchema, inventoryQuerySchema, updateInventoryRequestSchema } from "../dtos/inventory.dto";
+import { createInventoryRequestSchema, inventoryAuditQuerySchema, inventoryQuerySchema, updateInventoryRequestSchema } from "../../../shared/dtos/inventory.dto";
 import { InventoryService, InventoryServiceError } from "../services/inventory/inventory.service";
 
 export class InventoryController {

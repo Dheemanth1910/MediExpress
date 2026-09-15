@@ -4,8 +4,8 @@ import {
   createUserRequestSchema,
   updateUserRequestSchema,
   userIdSchema,
-} from "../dtos/user.dto";
-import { loginRequestSchema } from "../dtos/auth.dto";
+} from "../../../shared/dtos/user.dto";
+import { loginRequestSchema } from "../../../shared/dtos/auth.dto";
 import { AuthService } from "../services/user/auth.service";
 import { bearerToken } from "../middleware/authenticate.middleware";
 import { UserService, UserServiceError } from "../services/user/user.service";

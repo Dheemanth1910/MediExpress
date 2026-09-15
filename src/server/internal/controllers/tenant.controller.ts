@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createTenantRequestSchema } from "../dtos/tenant.dto";
+import { createTenantRequestSchema } from "../../../shared/dtos/tenant.dto";
 import { TenantService, TenantServiceError } from "../services/tenant/tenant.service";
 
 export class TenantController {

@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { LoginRequest, LoginResponse } from "../../dtos/auth.dto";
+import { LoginRequest, LoginResponse } from "../../../shared/dtos/auth.dto";
 import { AuthContext } from "../../context/auth.context";
 import { NewSession } from "../../entities/session.entity";
 import { UserRepository } from "../../repositories/user.repository";

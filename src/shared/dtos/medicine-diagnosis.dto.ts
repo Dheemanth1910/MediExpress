@@ -1,11 +1,16 @@
 import { z } from "zod";
-import { medicineCategoryEnum } from "../entities/medicine.entity";
-import { icdChapterEnum } from "../entities/diagnosis.entity";
+const medicineCategories = [
+  "A", "B", "C", "D", "G", "H", "J", "L", "M", "N", "P", "R", "S", "V",
+] as const;
+const icdChapters = [
+  "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII",
+  "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII",
+] as const;
 
 const medicineSchema = z
   .object({
     name: z.string().trim().min(1).max(255),
-    category: z.enum(medicineCategoryEnum.enumValues),
+    category: z.enum(medicineCategories),
   })
   .strict();
 
@@ -13,7 +18,7 @@ const diagnosisSchema = z
   .object({
     icdCode: z.string().trim().min(3).max(10),
     description: z.string().trim().min(1).max(255),
-    chapter: z.enum(icdChapterEnum.enumValues),
+    chapter: z.enum(icdChapters),
   })
   .strict();
 
@@ -33,14 +38,14 @@ export const createMedicineDiagnosesRequestSchema = z
 export const medicineResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  category: z.enum(medicineCategoryEnum.enumValues),
+  category: z.enum(medicineCategories),
 });
 
 export const diagnosisResponseSchema = z.object({
   id: z.string().uuid(),
   icdCode: z.string(),
   description: z.string(),
-  chapter: z.enum(icdChapterEnum.enumValues),
+  chapter: z.enum(icdChapters),
 });
 
 export const medicineDiagnosisResponseSchema = z.object({

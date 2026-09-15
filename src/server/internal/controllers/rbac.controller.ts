@@ -4,7 +4,7 @@ import {
   createRoleRequestSchema,
   roleListQuerySchema,
   updateRoleRequestSchema,
-} from "../dtos/rbac.dto";
+} from "../../../shared/dtos/rbac.dto";
 import { RbacService, RbacServiceError } from "../services/rbac/rbac.service";
 
 const validationError = (error: ZodError) => ({

@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { Permission } from "../services/rbac/permission";
+const permissionIds = [1, 2, 3] as const;
+type PermissionId = (typeof permissionIds)[number];
 
 const permissionSchema = z.number().int().refine(
-  (value): value is Permission => Object.values(Permission).includes(value),
+  (value): value is PermissionId => permissionIds.includes(value as PermissionId),
   "Unknown permission",
 );
 

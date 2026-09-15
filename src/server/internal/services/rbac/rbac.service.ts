@@ -5,7 +5,7 @@ import {
   PermissionResponse,
   RoleResponse,
   UpdateRoleRequest,
-} from "../../dtos/rbac.dto";
+} from "../../../shared/dtos/rbac.dto";
 import { DrizzleRbacRepository, RbacRepository } from "../../repositories/rbac.repository";
 
 export class RbacServiceError extends Error {
