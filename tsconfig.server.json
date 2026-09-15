@@ -6,6 +6,11 @@
     "moduleResolution": "node16",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "noEmit": false
+  },
+  "include": ["src/server/**/*.ts", "src/shared/**/*.ts", "drizzle.config.ts"],
+  "exclude": ["src/client"]
 }

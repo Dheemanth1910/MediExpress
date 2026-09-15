@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "node:path";
+import { existsSync } from "node:fs";
 import { AppDependencies, createDependencies } from "./container";
 import { createTenantRoutes } from "./routes/tenant.routes";
 import { createInventoryRoutes } from "./routes/inventory.routes";
@@ -23,6 +25,14 @@ export const createApp = (dependencies: AppDependencies = createDependencies()) 
   app.use("/api/rbac", createRbacRoutes(dependencies.rbacService));
   app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService, dependencies.authService));
   app.use("/api" , createMedicineDiagnosisRoutes(dependencies.medicineDiagnosesService))
+
+  const clientDist = path.resolve(process.cwd(), "dist/client");
+  if (existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.get(/^(?!\/api|\/health).*/, (_req, res) => {
+      res.sendFile(path.join(clientDist, "index.html"));
+    });
+  }
 
   return app;
 };

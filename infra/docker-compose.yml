@@ -13,20 +13,5 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # backend:
-  #   build: ../backend
-  #   ports:
-  #     - "4000:4000"
-  #   environment:
-  #     - NODE_ENV=development
-  #     - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/appdb
-  #   depends_on:
-  #     - postgres
-
-  # frontend:
-  #   build: ../frontend
-  #   ports:
-  #     - "5173:5173"
-
 volumes:
   pgdata:
