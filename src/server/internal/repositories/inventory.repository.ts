@@ -46,6 +46,18 @@ export interface InventoryAuditResult {
   total: number;
 }
 
+export interface InventorySyncResult {
+  id: string; 
+  inventoryItemId: string;
+  subTenantId: string;
+  medicineName: string,
+  medicineCategory: string,
+  quantity: number;
+  reason: string | null;
+  diagnosisCodes: string[];
+  createdAt: string;
+}
+
 export interface InventoryRepository {
   find(filters: InventoryFilters): Promise<InventoryListResult>;
   findById(id: string, subTenantId: string): Promise<InventoryItem | undefined>;
@@ -55,7 +67,11 @@ export interface InventoryRepository {
     input: NewInventoryMovement,
   ): Promise<InventoryItem | undefined>;
   findAudit(filters: InventoryAuditFilters): Promise<InventoryAuditResult>;
-  getSyncDataForBigQuery(id: string | null , subTenantId: string , limit : number): Promise<InventoryMovement[]>;
+  getSyncDataForBigQuery(
+    id: string | null,
+    subTenantId: string,
+    limit: number,
+  ): Promise<InventorySyncResult[]>;
 }
 
 export class DrizzleInventoryRepository implements InventoryRepository {
@@ -197,12 +213,13 @@ export class DrizzleInventoryRepository implements InventoryRepository {
     return { data: data.map(({ movement }) => movement), total: Number(count) };
   }
 
-  async getSyncDataForBigQuery(lastSyncedId: string | null, subTenantId : string , limit: number) {
-    
-    const rows = await db
+  async getSyncDataForBigQuery(id: string | null, subTenantId: string, limit: number) {
+    const rows = await this.database
       .select({
         id: inventoryMovements.id,
         inventoryItemId: inventoryMovements.inventoryItemId,
+        medicineName: medicines.name,
+        medicineCategory: medicines.category,
         subTenantId: inventoryMovements.subTenantId,
         quantity: inventoryMovements.quantity,
         reason: inventoryMovements.reason,
@@ -210,18 +227,22 @@ export class DrizzleInventoryRepository implements InventoryRepository {
         createdAt: inventoryMovements.createdAt,
       })
       .from(inventoryMovements)
-      .innerJoin(
-        inventoryItems,
-        eq(inventoryMovements.inventoryItemId, inventoryItems.id),
-      )
+      .innerJoin(medicines, eq(inventoryMovements.inventoryItemId, medicines.id))
       .where(
         and(
-          eq(inventoryMovements.operation, "DEL"),
-          eq(inventoryMovements.subTenantId , subTenantId ),
-          lastSyncedId ? gt(inventoryMovements.id, lastSyncedId) : undefined,
+          eq(inventoryMovements.operation, "DEL"), // Create constant for DEL and replace everywhere
+          eq(inventoryMovements.subTenantId, subTenantId),
+          id ? gt(inventoryMovements.id, id) : undefined,
         ),
       )
       .orderBy(inventoryMovements.id)
       .limit(limit);
+
+      return rows.map((row) => ({
+        ...row,
+        createdAt: row.createdAt.toISOString(),
+      }));
+    
+    }
   }
-}
+  

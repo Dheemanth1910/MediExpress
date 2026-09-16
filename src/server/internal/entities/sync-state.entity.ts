@@ -5,6 +5,7 @@ import { pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 // BigQuery table) without needing a new table each time.
 export const syncState = pgTable("sync_state", {
   jobName: varchar("job_name", { length: 100 }).primaryKey(),
+  subTenantId : uuid("sub_tenant_id").notNull(),
   lastSyncedId: uuid("last_synced_id"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
