@@ -9,9 +9,16 @@ import {
 
 const DATASET_ID = "medicine_forecasting";
 
+export interface ForcastDataResponse {
+  mediceneId: string;
+  demand_7_days: number;
+  demand_30_days: number;
+}
+
 export interface OutboundMovementRepository {
   create(input: NewOutboundMovement): Promise<OutboundMovement>;
   createMany(inputs: NewOutboundMovement[]): Promise<OutboundMovement[]>;
+  getForcastData(mediceneId: string[], subTenantId: string): Promise<ForcastDataResponse[]>;
 }
 
 export class BigQueryOutboundMovementRepository
@@ -30,6 +37,10 @@ export class BigQueryOutboundMovementRepository
       createInsertId: true,
     });
     return input as OutboundMovement;
+  }
+
+  async getForcastData(mediceneId: string[], subTenantId: string) {
+    return {} as ForcastDataResponse[]
   }
 
   async createMany(inputs: NewOutboundMovement[]) {
