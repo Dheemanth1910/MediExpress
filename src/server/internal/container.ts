@@ -9,6 +9,11 @@ import { MedicineDiagnosisService } from "./services/medicine-diagnosis/medicine
 import { DrizzleInventoryRepository } from "./repositories/inventory.repository";
 import { DrizzleRbacRepository } from "./repositories/rbac.repository";
 import { DrizzleTenantRepository } from "./repositories/tenant.repository";
+import { DrizzleMedicineRepository } from "./repositories/medicine.repository";
+import { DrizzleDiagnosisRepository } from "./repositories/diagnosis.repository";
+import { DrizzleMedicineDiagnosisRepository } from "./repositories/medicine-diagnosis.repository";
+import { DrizzleSubTenantTenantRepository } from "./repositories/sub-tenant.repository";
+import { SubTenantService } from "./services/sub-tenant/sub-tenant.service";
 import { db, type Database } from "../db/client";
 
 export interface AppDependencies {
@@ -16,6 +21,7 @@ export interface AppDependencies {
   inventoryService: InventoryService;
   rbacService: RbacService;
   tenantService: TenantService;
+  subTenantService: SubTenantService;
   userService: UserService;
   authService: AuthService;
   medicineDiagnosesService: MedicineDiagnosisService;
@@ -25,15 +31,23 @@ export const createDependencies = (overrides: Partial<AppDependencies> = {}): Ap
   const database = overrides.database ?? db;
   const userRepository = new DrizzleUserRepository(database);
   const sessionRepository = new DrizzleSessionRepository(database);
+  const medicineRepository = new DrizzleMedicineRepository(database);
+  const diagnosisRepository = new DrizzleDiagnosisRepository(database);
+  const medicineDiagnosisRepository = new DrizzleMedicineDiagnosisRepository(database);
 
   return {
     database,
     inventoryService: overrides.inventoryService ?? new InventoryService(new DrizzleInventoryRepository(database)),
     rbacService: overrides.rbacService ?? new RbacService(new DrizzleRbacRepository(database)),
     tenantService: overrides.tenantService ?? new TenantService(new DrizzleTenantRepository(database)),
+    subTenantService: overrides.subTenantService ?? new SubTenantService(new DrizzleSubTenantTenantRepository(database)),
     userService: overrides.userService ?? new UserService(userRepository),
     authService: overrides.authService ?? new AuthService(userRepository, sessionRepository),
     medicineDiagnosesService:
-      overrides.medicineDiagnosesService ?? new MedicineDiagnosisService(),
+      overrides.medicineDiagnosesService ?? new MedicineDiagnosisService({
+        medicineRepository,
+        diagnosisRepository,
+        medicineDiagnosisRepository,
+      }),
   };
 };

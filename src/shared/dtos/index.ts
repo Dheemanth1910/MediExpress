@@ -4,4 +4,5 @@ export * from "./inventory.dto";
 export * from "./medicine-diagnosis.dto";
 export * from "./rbac.dto";
 export * from "./tenant.dto";
+export * from "./sub-tenant.dto";
 export * from "./user.dto";

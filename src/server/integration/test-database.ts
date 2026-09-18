@@ -14,16 +14,28 @@ export interface IntegrationDatabase {
 
 export const createIntegrationDatabase = async (): Promise<IntegrationDatabase> => {
   const adminUrl = process.env.TEST_DATABASE_URL;
-  if (!adminUrl) throw new Error("TEST_DATABASE_URL is required for integration tests");
+  if (!adminUrl) {
+    throw new Error("TEST_DATABASE_URL is required for integration tests");
+  }
 
-  const name = `mediexpress_test_${process.pid}_${randomBytes(5).toString("hex")}`;
+  let testDatabase = process.env.TEST_DATABASE_NAME;
+  if (!testDatabase) {
+    testDatabase = `mediexpress_test_${process.pid}_${randomBytes(5).toString("hex")}`;
+  }
   const adminPool = new Pool({ connectionString: adminUrl });
-  await adminPool.query(`CREATE DATABASE ${identifier(name)}`);
+  const result = await adminPool.query(`SELECT 1 FROM pg_database WHERE datname = $1`,[testDatabase]);
+
+  if (result.rowCount === 0) {
+    await adminPool.query(
+      `CREATE DATABASE ${identifier(testDatabase)}`,
+    );
+  }
+
   await adminPool.end();
 
   const testUrl = new URL(adminUrl);
-  testUrl.pathname = `/${name}`;
-  const pool = new Pool({ connectionString: testUrl.toString() });
+  testUrl.pathname = `/${testDatabase}`;
+  const pool = new Pool({ connectionString: testUrl.toString(), max: 20 });
   const database = drizzle(pool);
 
   await migrate(database, { migrationsFolder: resolve(process.cwd(), "drizzle") });
@@ -32,9 +44,9 @@ export const createIntegrationDatabase = async (): Promise<IntegrationDatabase> 
     database,
     async close() {
       await pool.end();
-      const cleanupPool = new Pool({ connectionString: adminUrl });
-      await cleanupPool.query(`DROP DATABASE ${identifier(name)} WITH (FORCE)`);
-      await cleanupPool.end();
+      // const cleanupPool = new Pool({ connectionString: adminUrl });
+      // await cleanupPool.query(`DROP DATABASE ${identifier(name)} WITH (FORCE)`);
+      // await cleanupPool.end();
     },
   };
 };

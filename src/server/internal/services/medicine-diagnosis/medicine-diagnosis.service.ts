@@ -5,7 +5,7 @@ import {
   MedicineResponse,
   DiagnosisResponse,
   MedicineDiagnosisResponse,
-} from "../../../shared/dtos/medicine-diagnosis.dto";
+} from "../../../../shared/dtos/medicine-diagnosis.dto";
 
 import { NewMedicine, Medicine } from "../../entities/medicine.entity";
 import { NewDiagnosis, Diagnosis } from "../../entities/diagnosis.entity";

@@ -11,6 +11,7 @@ export const createInventoryRoutes = (service: InventoryService, authService: Au
 
   router.post("/add", authenticate, controller.create.bind(controller));
   router.put("/update", authenticate, controller.update.bind(controller));
+  router.post("/bulk-update", authenticate, controller.bulkUpdate.bind(controller));
   router.get("/get", authenticate, controller.list.bind(controller));
   router.get("/audit", authenticate, controller.audit.bind(controller));
   router.get("/:id", authenticate, controller.get.bind(controller));

@@ -46,6 +46,8 @@ export interface InventoryAuditResult {
   total: number;
 }
 
+export type InventoryMovementInput = Omit<NewInventoryMovement, "id">;
+
 export interface InventorySyncResult {
   id: string; 
   inventoryItemId: string;
@@ -64,7 +66,7 @@ export interface InventoryRepository {
   medicineExists(id: string): Promise<boolean>;
   create(input: NewInventoryItem): Promise<InventoryItem>;
   adjustQuantity(
-    input: NewInventoryMovement,
+    input: InventoryMovementInput,
   ): Promise<InventoryItem | undefined>;
   findAudit(filters: InventoryAuditFilters): Promise<InventoryAuditResult>;
   getSyncDataForBigQuery(
@@ -168,7 +170,9 @@ export class DrizzleInventoryRepository implements InventoryRepository {
         .set({ quantity: nextQuantity })
         .where(eq(inventoryItems.id, item.id))
         .returning();
-      await transaction.insert(inventoryMovements).values(input);
+      await transaction
+        .insert(inventoryMovements)
+        .values({ ...input, id: uuidv7() });
       return updated;
     });
   }
@@ -238,11 +242,9 @@ export class DrizzleInventoryRepository implements InventoryRepository {
       .orderBy(inventoryMovements.id)
       .limit(limit);
 
-      return rows.map((row) => ({
+    return rows.map((row) => ({
         ...row,
         createdAt: row.createdAt.toISOString(),
-      }));
-    
-    }
+    }));
   }
-  
+}

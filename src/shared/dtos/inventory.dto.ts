@@ -12,6 +12,7 @@ export const updateInventoryRequestSchema = z.object({
   quantity: z.number().int().positive(),
   reason: z.string().trim().min(1).max(500).optional(),
   diagnosisCodes: z.array(z.string().trim().min(1).max(20)).optional(),
+  createdAt: z.coerce.date().optional(),
 }).strict().superRefine((input, context) => {
   if (input.operation === "add" && !input.reason) {
     context.addIssue({ code: "custom", path: ["reason"], message: "reason is required when adding stock" });
@@ -20,6 +21,8 @@ export const updateInventoryRequestSchema = z.object({
     context.addIssue({ code: "custom", path: ["diagnosisCodes"], message: "diagnosisCodes are required when deleting stock" });
   }
 });
+
+export const bulkUpdateInventoryRequestSchema = z.array(updateInventoryRequestSchema).min(1).max(500);
 
 export const inventoryQuerySchema = z.object({
   id: z.string().uuid().optional(),

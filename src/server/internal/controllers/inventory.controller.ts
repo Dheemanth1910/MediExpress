@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createInventoryRequestSchema, inventoryAuditQuerySchema, inventoryQuerySchema, updateInventoryRequestSchema } from "../../../shared/dtos/inventory.dto";
+import { bulkUpdateInventoryRequestSchema, createInventoryRequestSchema, inventoryAuditQuerySchema, inventoryQuerySchema, updateInventoryRequestSchema } from "../../../shared/dtos/inventory.dto";
 import { InventoryService, InventoryServiceError } from "../services/inventory/inventory.service";
 
 export class InventoryController {
@@ -40,6 +40,14 @@ export class InventoryController {
     if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
     if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
     try { return res.json(await this.service.update(parsed.data, req.auth.subTenantId)); }
+    catch (error) { return this.handleError(res, error); }
+  }
+
+  async bulkUpdate(req: Request, res: Response) {
+    const parsed = bulkUpdateInventoryRequestSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+    if (!req.auth?.subTenantId) return res.status(403).json({ error: "A tenant context is required" });
+    try { return res.json(await this.service.bulkUpdate(parsed.data, req.auth.subTenantId)); }
     catch (error) { return this.handleError(res, error); }
   }
 
