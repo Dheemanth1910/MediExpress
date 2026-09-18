@@ -6,13 +6,9 @@
  * fetches every "DEL" movement created since then (using > on the
  * UUIDv7 id, which is safe because v7 UUIDs are time-ordered),
  * pushes them into BigQuery, and advances the watermark to the
- * highest id it just processed.
+ * highest id it just processed - per subtenant.
  **/
 
-import { gt, eq, and } from "drizzle-orm";
-import { db } from "../db/client";
-import { inventoryMovements } from "../internal/entities/inventory-movement.entity";
-import { inventoryItems } from "../internal/entities/inventory.entity";
 import { BigQueryOutboundMovementRepository } from "../internal/repositories/outbound-movement.repository";
 import { DrizzleInventoryRepository } from "../internal/repositories/inventory.repository";
 import { DrizzleSyncStateRepository } from "../internal/repositories/sync-state.repository";
@@ -27,13 +23,13 @@ async function main() {
   const inventoryRepository = new DrizzleInventoryRepository();
   const subTenantRepository = new DrizzleSubTenantTenantRepository();
   const subTenants = await subTenantRepository.findAll();
-  subTenants.map(async (subTenant) => {
-    await processSubTenant(
-      subTenant.id,
-      inventoryRepository,
-      syncStateRepository,
-    );
-  });
+
+  // Sequential on purpose - one subtenant fully finishes (Postgres read,
+  // BigQuery write, watermark update) before the next one starts. Safer
+  // on BigQuery quota than firing all subtenants' inserts at once.
+  for (const subTenant of subTenants) {
+    await processSubTenant(subTenant.id, inventoryRepository, syncStateRepository);
+  }
 }
 
 async function processSubTenant(
@@ -48,8 +44,9 @@ async function processSubTenant(
   console.log(
     lastSyncedId
       ? `Fetching outbound movements after id ${lastSyncedId} for Subtenant - ${subTenantId}...`
-      : "No watermark found - fetching all outbound movements...",
+      : `No watermark found - fetching all outbound movements for Subtenant - ${subTenantId}...`,
   );
+
   const rows = await inventoryRepository.getSyncDataForBigQuery(
     lastSyncedId,
     subTenantId,
@@ -57,7 +54,7 @@ async function processSubTenant(
   );
 
   if (rows.length === 0) {
-    console.log("No new outbound movements to sync.");
+    console.log(`No new outbound movements to sync for Subtenant - ${subTenantId}.`);
     return;
   }
 
@@ -78,6 +75,7 @@ async function processSubTenant(
 
   const outboundMovementRepository = new BigQueryOutboundMovementRepository();
   await outboundMovementRepository.createMany(bigQueryRows);
+
   // ids are UUIDv7, so the last row in ascending order is also the
   // highest id - no separate max() computation needed.
   const highestId = rows[rows.length - 1].id;
@@ -86,6 +84,7 @@ async function processSubTenant(
     `Synced ${rows.length} row(s). Watermark advanced to ${highestId} for SubTenant - ${subTenantId}`,
   );
 }
+
 main()
   .then(() => process.exit(0))
   .catch((error) => {
