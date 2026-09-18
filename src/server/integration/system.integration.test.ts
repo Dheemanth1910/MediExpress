@@ -16,6 +16,7 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
   let database: IntegrationDatabase;
   let app: ReturnType<typeof createApp>;
   let tenantId: string;
+  let subTenantId: string;
   let userId: string;
   let token: string;
   let userEmail: string;
@@ -39,6 +40,13 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
     expect(created.body.name).toBe(uniqueName);
     tenantId = created.body.id;
 
+    const subTenant = await request(app).post("/api/sub-tenants").send({
+      name: `${uniqueName}-location`, latitude: 19.076, longitude: 72.8777,
+      city: "Mumbai", district: "Mumbai", state: "Maharashtra", country: "India", tenantId,
+    });
+    expect(subTenant.status).toBe(201);
+    subTenantId = subTenant.body.id;
+
     const duplicate = await request(app).post("/api/tenants").send({ name: uniqueName });
     expect(duplicate.status).toBe(409);
     expect((await request(app).get(`/api/tenants/${tenantId}`)).status).toBe(200);
@@ -48,14 +56,14 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
   it("runs user registration, login, protected access, update, and logout", async () => {
     const email = `integration-${Date.now()}@example.com`;
     userEmail = email;
-    expect((await request(app).post("/api/user/create").send({ name: "Integration", email, password: "password123", subTenant: tenantId })).status).toBe(201);
+    expect((await request(app).post("/api/user/create").send({ name: "Integration", email, password: "password123", subTenant: subTenantId })).status).toBe(201);
     expect((await request(app).post("/api/user/create").send({ name: "Duplicate", email, password: "password123" })).status).toBe(409);
 
     const login = await request(app).post("/api/user/login").send({ email, password: "password123" });
     expect(login.status).toBe(200);
     token = login.body.token;
     userId = login.body.user.id;
-    expect(login.body.user.subTenant).toBe(tenantId);
+    expect(login.body.user.subTenant).toBe(subTenantId);
     expect((await request(app).post("/api/user/login").send({ email, password: "wrong" })).status).toBe(401);
     expect((await request(app).get(`/api/user/info/${userId}`)).status).toBe(401);
     expect((await request(app).get(`/api/user/info/${userId}`).set("Authorization", `Bearer ${token}`)).status).toBe(200);
@@ -120,15 +128,5 @@ describe.skipIf(!runIntegrationTests)("system integration", () => {
     expect(audit.status).toBe(200);
     expect(audit.body.total).toBe(2);
     expect(audit.body.data).toHaveLength(2);
-  });
-
-
-  it("custom api calls", async () => {
-    const payload = { email: "rahul@gmail.com", password: "passwd" };
-
-    await request(app).post("/api/user/login").send(payload)
-      .then(response => {
-        // console.log(response.status)
-      });
   });
 })

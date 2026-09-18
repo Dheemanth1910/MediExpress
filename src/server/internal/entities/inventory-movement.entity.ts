@@ -1,11 +1,11 @@
 import { integer, jsonb, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { inventoryItems } from "./inventory.entity";
-import { tenants } from "./tenant.entity";
+import { subTenants } from "./sub-tenant.entity";
 
 export const inventoryMovements = pgTable("inventory_movements", {
   id: uuid("id").primaryKey(),
   inventoryItemId: uuid("inventory_item_id").references(() => inventoryItems.id).notNull(),
-  subTenantId: uuid("sub_tenant_id").references(() => tenants.id).notNull(),
+  subTenantId: uuid("sub_tenant_id").references(() => subTenants.id).notNull(),
   operation: varchar("operation", { length: 3 }).notNull(),
   quantity: integer("quantity").notNull(),
   reason: varchar("reason", { length: 500 }),

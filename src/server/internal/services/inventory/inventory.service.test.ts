@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { InventoryItem } from "../../entities/inventory.entity";
 import { InventoryMovement } from "../../entities/inventory-movement.entity";
-import { InventoryAuditFilters, InventoryAuditResult, InventoryFilters, InventoryListResult, InventoryRepository } from "../../repositories/inventory.repository";
+import { InventoryAuditFilters, InventoryAuditResult, InventoryFilters, InventoryListResult, InventoryMovementInput, InventoryRepository } from "../../repositories/inventory.repository";
 import { InventoryService } from "./inventory.service";
 
 const tenantId = "550e8400-e29b-41d4-a716-446655440000";
@@ -39,15 +39,20 @@ class InMemoryInventoryRepository implements InventoryRepository {
     return this.current;
   }
 
-  async adjustQuantity(input: InventoryMovement) {
+  async adjustQuantity(input: InventoryMovementInput) {
     const nextQuantity = input.operation === "add"
       ? this.current.quantity + input.quantity
       : this.current.quantity - input.quantity;
     if (nextQuantity < 0) return undefined;
     this.current = { ...this.current, quantity: nextQuantity };
     this.movements.push({
-      ...input,
       id: `550e8400-e29b-41d4-a716-44665544000${this.movements.length + 3}`,
+      inventoryItemId: input.inventoryItemId,
+      subTenantId: input.subTenantId,
+      operation: input.operation,
+      quantity: input.quantity,
+      reason: input.reason ?? null,
+      diagnosisCodes: input.diagnosisCodes ?? [],
       createdAt: new Date(),
     });
     return this.current;
@@ -59,6 +64,10 @@ class InMemoryInventoryRepository implements InventoryRepository {
       && (!filters.inventoryItemId || movement.inventoryItemId === filters.inventoryItemId)
     )).slice(filters.offset, filters.offset + filters.limit);
     return { data, total: this.movements.length };
+  }
+
+  async getSyncDataForBigQuery() {
+    return [];
   }
 }
 

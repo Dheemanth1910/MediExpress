@@ -4,6 +4,7 @@ import path from "node:path";
 import { existsSync } from "node:fs";
 import { AppDependencies, createDependencies } from "./container";
 import { createTenantRoutes } from "./routes/tenant.routes";
+import { createSubTenantRoutes } from "./routes/sub-tenant.routes";
 import { createInventoryRoutes } from "./routes/inventory.routes";
 import { createUserRoutes } from "./routes/user.routes";
 import { createRbacRoutes } from "./routes/rbac.routes";
@@ -21,6 +22,7 @@ export const createApp = (dependencies: AppDependencies = createDependencies()) 
   });
 
   app.use("/api/tenants", createTenantRoutes(dependencies.tenantService));
+  app.use("/api/sub-tenants", createSubTenantRoutes(dependencies.subTenantService));
   app.use("/api/user", createUserRoutes(dependencies.userService, dependencies.authService));
   app.use("/api/rbac", createRbacRoutes(dependencies.rbacService));
   app.use("/api/inventory", createInventoryRoutes(dependencies.inventoryService, dependencies.authService));

@@ -12,6 +12,7 @@
     "start": "node dist/src/server/index.js",
     "test": "vitest run",
     "test:integration": "RUN_INTEGRATION_TESTS=1 vitest run src/server/integration",
+    "test:inventory-data": "RUN_INVENTORY_DATA_GENERATION=1 vitest run src/server/integration/inventory-data-generation.integration.test.ts",
     "lint": "eslint src/client",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

@@ -1,7 +1,7 @@
 import { InventoryItem, NewInventoryItem } from "../../entities/inventory.entity";
-import { NewInventoryMovement } from "../../entities/inventory-movement.entity";
-import { CreateInventoryRequest, InventoryAuditEntryResponse, InventoryAuditQuery, InventoryItemResponse, InventoryQuery, UpdateInventoryRequest } from "../../../shared/dtos/inventory.dto";
-import { DrizzleInventoryRepository, InventoryRepository } from "../../repositories/inventory.repository";
+import { InventoryMovement } from "../../entities/inventory-movement.entity";
+import { CreateInventoryRequest, InventoryAuditEntryResponse, InventoryAuditQuery, InventoryItemResponse, InventoryQuery, UpdateInventoryRequest } from "../../../../shared/dtos/inventory.dto";
+import { DrizzleInventoryRepository, InventoryMovementInput, InventoryRepository } from "../../repositories/inventory.repository";
 
 const toResponse = (item: InventoryItem): InventoryItemResponse => ({
   id: item.id,
@@ -11,7 +11,7 @@ const toResponse = (item: InventoryItem): InventoryItemResponse => ({
   expiryDate: item.expiryDate,
 });
 
-const toAuditResponse = (movement: NewInventoryMovement & { id: string; createdAt: Date }): InventoryAuditEntryResponse => ({
+const toAuditResponse = (movement: InventoryMovement): InventoryAuditEntryResponse => ({
   id: movement.id,
   inventoryItemId: movement.inventoryItemId,
   subTenantId: movement.subTenantId,
@@ -67,19 +67,26 @@ export class InventoryService {
       throw new InventoryServiceError(409, "Insufficient inventory quantity");
     }
 
-    const movement: NewInventoryMovement = {
+    const movement: InventoryMovementInput = {
       inventoryItemId: item.id,
       subTenantId,
       operation: input.operation,
       quantity: input.quantity,
       reason: input.reason,
       diagnosisCodes: input.diagnosisCodes ?? [],
+      createdAt: input.createdAt,
     };
 
     const updated = await this.repository.adjustQuantity(movement);
     if (!updated) throw new InventoryServiceError(409, "Inventory quantity could not be updated");
 
     return toResponse(updated);
+  }
+
+  async bulkUpdate(input: UpdateInventoryRequest[], subTenantId: string) {
+    const results = [];
+    for (const movement of input) results.push(await this.update(movement, subTenantId));
+    return results;
   }
 
   async audit(query: InventoryAuditQuery, subTenantId: string): Promise<{ data: InventoryAuditEntryResponse[]; page: number; pageSize: number; total: number }> {
