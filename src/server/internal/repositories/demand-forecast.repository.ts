@@ -5,7 +5,7 @@ const DATASET_ID = "medicine_forecasting";
 const MODEL_ID = "demand_forecast_model";
 
 export interface DemandForecastRepository {
-  getForecast(
+  getMedicineForecast(
     subTenantId: string,
     medicineIds: string[],
   ): Promise<MedicineDemandForecast[]>;
@@ -16,7 +16,7 @@ export class BigQueryDemandForecastRepository
 {
   constructor(private readonly client = bigQueryClient) {}
 
-  async getForecast(
+  async getMedicineForecast(
     subTenantId: string,
     medicineIds: string[],
   ): Promise<MedicineDemandForecast[]> {
