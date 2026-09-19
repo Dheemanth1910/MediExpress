@@ -8,8 +8,8 @@ import { createIntegrationDatabase, IntegrationDatabase } from "./test-database"
 const enabled = process.env.RUN_INVENTORY_DATA_GENERATION === "1";
 const TOTAL_MOVEMENTS = 1_000_000;
 const SUBTENANT_COUNT = 10;
-const YEAR_START = new Date("2025-01-01T00:00:00.000Z");
-const YEAR_END = new Date("2026-01-01T00:00:00.000Z");
+const YEAR_START = new Date("2025-09-18T00:00:00.000Z");
+const YEAR_END = new Date("2026-09-18T00:00:00.000Z");
 const DAY_MS = 24 * 60 * 60 * 1_000;
 
 const medicineSeed = [
@@ -50,7 +50,7 @@ const isHighConsumptionDay = (date: Date) => {
   return weekday === 0 || weekday === 6 || isHoliday(date) || date.getUTCDate() >= 28;
 };
 
-describe.skipIf(!enabled)("inventory training data generation", { timeout: 30 * 60 * 1_000 }, () => {
+describe.skipIf(!enabled)("inventory training data generation", { timeout: 120 * 60 * 1_000 }, () => {
   let database: IntegrationDatabase;
   let app: ReturnType<typeof createApp>;
 

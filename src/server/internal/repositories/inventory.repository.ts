@@ -50,10 +50,8 @@ export type InventoryMovementInput = Omit<NewInventoryMovement, "id">;
 
 export interface InventorySyncResult {
   id: string; 
-  inventoryItemId: string;
   subTenantId: string;
-  medicineName: string,
-  medicineCategory: string,
+  medicineId: string,
   quantity: number;
   reason: string | null;
   diagnosisCodes: string[];
@@ -221,9 +219,7 @@ export class DrizzleInventoryRepository implements InventoryRepository {
     const rows = await this.database
       .select({
         id: inventoryMovements.id,
-        inventoryItemId: inventoryMovements.inventoryItemId,
-        medicineName: medicines.name,
-        medicineCategory: medicines.category,
+        medicineId: inventoryItems.medicineId,
         subTenantId: inventoryMovements.subTenantId,
         quantity: inventoryMovements.quantity,
         reason: inventoryMovements.reason,
@@ -231,10 +227,10 @@ export class DrizzleInventoryRepository implements InventoryRepository {
         createdAt: inventoryMovements.createdAt,
       })
       .from(inventoryMovements)
-      .innerJoin(medicines, eq(inventoryMovements.inventoryItemId, medicines.id))
+      .innerJoin(inventoryItems, eq(inventoryMovements.inventoryItemId, inventoryItems.id))
       .where(
         and(
-          eq(inventoryMovements.operation, "DEL"), // Create constant for DEL and replace everywhere
+          eq(inventoryMovements.operation, "del"), // Create constant for DEL and replace everywhere
           eq(inventoryMovements.subTenantId, subTenantId),
           id ? gt(inventoryMovements.id, id) : undefined,
         ),

@@ -9,9 +9,7 @@ export const OUTBOUND_MOVEMENTS_TABLE_ID = "outbound_movements";
 // documentation of the table shape - it has no runtime effect on its own.
 export const outboundMovementsSchema: TableField[] = [
   { name: "movement_id", type: "STRING", mode: "REQUIRED" },
-  { name: "inventory_item_id", type: "STRING", mode: "REQUIRED" },
-  { name: "item_name", type: "STRING", mode: "NULLABLE" },
-  { name: "item_category", type: "STRING", mode: "NULLABLE" },
+  { name: "medicine_id", type: "STRING", mode: "REQUIRED" },
   { name: "sub_tenant_id", type: "STRING", mode: "REQUIRED" },
   { name: "quantity", type: "INTEGER", mode: "REQUIRED" },
   { name: "reason", type: "STRING", mode: "NULLABLE" },
@@ -25,9 +23,7 @@ export const outboundMovementsSchema: TableField[] = [
 // outboundMovementsSchema above manually if the table shape ever changes.
 export interface OutboundMovement {
   movement_id: string;
-  inventory_item_id: string;
-  item_name: string | null;
-  item_category: string | null;
+  medicine_id: string;
   sub_tenant_id: string;
   quantity: number;
   reason: string | null;
